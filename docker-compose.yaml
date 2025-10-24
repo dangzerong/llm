@@ -1,0 +1,36 @@
+
+version: '3.8'
+services:
+  deepseek-vllm:
+    container_name: deepseek-vllm-service
+    image: vllm/vllm-openai:latest
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    environment:
+      - VLLM_USE_MODELSCOPE=true
+      - HF_HOME=/root/.cache/huggingface
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command:
+      - "--model"
+      - "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
+      - "--served-model-name"
+      - "deepseek-r1-0528-qwen3-8b"
+      - "--max-model-len"
+      - "8192"
+      - "--gpu-memory-utilization"
+      - "0.85"
+      - "--tensor-parallel-size"
+      - "1"
+      - "--max-num-batched-tokens"
+      - "4096"
